@@ -3,6 +3,7 @@ import { Layout } from "antd";
 import SiderMenu from "./components/SiderMenu";
 import Maintenance from "./components/Maintenance";
 import AmenityReservation from "./components/AmenityReservation";
+import PackageTracker from "./components/PackageTracker";
 
 const { Sider, Content } = Layout;
 
@@ -18,6 +19,7 @@ function App() {
         <Content style={{ padding: "24px" }}>
           {selectedMenu === "maintenance" && <Maintenance />}
           {selectedMenu === "amenityReservation" && <AmenityReservation />}
+          {selectedMenu === "packageTracker" && <PackageTracker />}
         </Content>
       </Layout>
     </Layout>
