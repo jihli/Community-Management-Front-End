@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Breadcrumb,
   Steps,
@@ -12,28 +12,49 @@ import {
 } from "antd";
 import { CheckCircleOutlined } from "@ant-design/icons";
 import moment from "moment";
+import { AmenityReservationsAPI } from "../utils"; // 引入 API 请求函数
 
 const { Step } = Steps;
 
-// List of available amenities
-const amenities = [
-  { id: 1, name: "Study Room", image: "https://via.placeholder.com/150" },
-  { id: 2, name: "Swimming Pool", image: "https://via.placeholder.com/150" },
-  { id: 3, name: "Sports Room", image: "https://via.placeholder.com/150" },
-  {
-    id: 4,
-    name: "Entertainment Room",
-    image: "https://via.placeholder.com/150",
-  },
-];
-
-const AmenityReservation = () => {
-  const [currentStep, setCurrentStep] = useState(0); // Current step in the process
-  const [selectedAmenity, setSelectedAmenity] = useState(null); // Amenity selected by the user
-  const [reservationDetails, setReservationDetails] = useState([]); // List of past reservations
+const AmenityReservation = ({ userId }) => {
+  const [currentStep, setCurrentStep] = useState(0); // 当前步骤
+  const [selectedAmenity, setSelectedAmenity] = useState(null); // 选中的设施
+  const [reservationDetails, setReservationDetails] = useState([]); // 历史预约
+  const [amenities, setAmenities] = useState([]); // 设施列表
   const [form] = Form.useForm();
+  const amenityMapping = {
+    1: "Swimming Pool",
+    2: "Gym",
+    3: "Tennis Court",
+  };
 
-  // Handle navigation to the next step
+  // 获取设施列表
+  useEffect(() => {
+    const fetchAmenities = async () => {
+      try {
+        const amenitiesList = await AmenityReservationsAPI.getAmenities();
+        setAmenities(amenitiesList);
+      } catch (error) {
+        message.error("Failed to fetch amenities.");
+      }
+    };
+    fetchAmenities();
+
+    // 获取历史预约
+    const fetchReservations = async () => {
+      try {
+        const reservations = await AmenityReservationsAPI.getReservations(
+          userId
+        );
+        setReservationDetails(reservations);
+      } catch (error) {
+        message.error("Failed to fetch past reservations.");
+      }
+    };
+    fetchReservations();
+  }, [userId]);
+
+  // 处理下一步
   const handleNext = () => {
     if (currentStep === 0 && !selectedAmenity) {
       message.error("Please select an amenity.");
@@ -42,16 +63,23 @@ const AmenityReservation = () => {
     if (currentStep === 1) {
       form
         .validateFields()
-        .then((values) => {
+        .then(async (values) => {
           const { date, time } = values;
-          const newReservation = {
-            amenity: selectedAmenity.name,
-            date: date.format("YYYY-MM-DD"),
-            time: time.format("HH:mm"),
-          };
-          setReservationDetails([...reservationDetails, newReservation]); // Save the reservation
-          form.resetFields();
-          setCurrentStep(currentStep + 1);
+          try {
+            // 创建预约
+            const newReservation =
+              await AmenityReservationsAPI.createReservation(
+                userId,
+                selectedAmenity.id,
+                date.format("YYYY-MM-DD"),
+                time.format("HH:mm")
+              );
+            setReservationDetails([...reservationDetails, newReservation]); // 更新历史预约
+            form.resetFields();
+            setCurrentStep(currentStep + 1);
+          } catch (error) {
+            message.error("Failed to create reservation.");
+          }
         })
         .catch(() => {
           message.error("Please complete the form.");
@@ -61,26 +89,26 @@ const AmenityReservation = () => {
     setCurrentStep(currentStep + 1);
   };
 
-  // Handle navigation to the previous step
+  // 处理上一步
   const handlePrev = () => {
     setCurrentStep(currentStep - 1);
   };
 
-  // Handle amenity selection
+  // 处理设施选择
   const handleAmenitySelect = (amenity) => {
     setSelectedAmenity(amenity);
   };
 
-  // Reset form and steps
+  // 重置表单
   const resetForm = () => {
     setCurrentStep(0);
     setSelectedAmenity(null);
   };
 
-  // Disable past dates
+  // 禁用过去的日期
   const disableDate = (current) => current && current < moment().startOf("day");
 
-  // Disable past times for today
+  // 禁用过去的时间
   const disableTime = (selectedDate) => {
     if (!selectedDate || selectedDate.isAfter(moment(), "day")) return {};
     const currentHour = moment().hour();
@@ -101,7 +129,6 @@ const AmenityReservation = () => {
 
   return (
     <div style={{ padding: "24px", background: "#fff" }}>
-      {/* Breadcrumb navigation */}
       <Breadcrumb style={{ marginBottom: "16px" }}>
         <Breadcrumb.Item style={{ color: "#aaa" }}>
           Calendar Schedule
@@ -113,14 +140,12 @@ const AmenityReservation = () => {
 
       <h2>Amenity Reservation</h2>
 
-      {/* Step navigation */}
       <Steps current={currentStep} style={{ marginBottom: "24px" }}>
         <Step title="Choose an Amenity" />
         <Step title="Choose Date and Time" />
         <Step title="Done" />
       </Steps>
 
-      {/* Step 1: Select an amenity */}
       {currentStep === 0 && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: "16px" }}>
           {amenities.map((amenity) => (
@@ -137,13 +162,12 @@ const AmenityReservation = () => {
               cover={<img alt={amenity.name} src={amenity.image} />}
               onClick={() => handleAmenitySelect(amenity)}
             >
-              <Card.Meta title={amenity.name} />
+              <Card.Meta title={amenity.amenityName} />
             </Card>
           ))}
         </div>
       )}
 
-      {/* Step 2: Select date and time */}
       {currentStep === 1 && (
         <Form
           form={form}
@@ -171,7 +195,6 @@ const AmenityReservation = () => {
         </Form>
       )}
 
-      {/* Step 3: Success message */}
       {currentStep === 2 && (
         <div style={{ textAlign: "center", marginTop: "50px" }}>
           <CheckCircleOutlined style={{ fontSize: "64px", color: "#52c41a" }} />
@@ -193,7 +216,6 @@ const AmenityReservation = () => {
         </div>
       )}
 
-      {/* Navigation buttons */}
       {currentStep < 2 && (
         <div style={{ marginTop: "24px" }}>
           <Button
@@ -209,7 +231,6 @@ const AmenityReservation = () => {
         </div>
       )}
 
-      {/* Past reservations list */}
       {currentStep === 0 && (
         <List
           style={{ marginTop: "32px" }}
@@ -218,8 +239,8 @@ const AmenityReservation = () => {
           renderItem={(item) => (
             <List.Item>
               <List.Item.Meta
-                title={item.amenity}
-                description={`Date: ${item.date}, Time: ${item.time}`}
+                title={amenityMapping[item.amenityId] || "Unknown Amenity"}
+                description={`Date: ${item.reservationDate}, Time: ${item.reservationTime}`}
               />
             </List.Item>
           )}
