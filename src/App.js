@@ -4,6 +4,7 @@ import SiderMenu from "./components/SiderMenu";
 import Maintenance from "./components/Maintenance";
 import AmenityReservation from "./components/AmenityReservation";
 import PackageTracker from "./components/PackageTracker";
+import ChatThread from "./components/ChatThread";
 
 const { Sider, Content } = Layout;
 
@@ -20,6 +21,7 @@ function App() {
           {selectedMenu === "maintenance" && <Maintenance />}
           {selectedMenu === "amenityReservation" && <AmenityReservation />}
           {selectedMenu === "packageTracker" && <PackageTracker />}
+          {selectedMenu === "chat" && <ChatThread />}
         </Content>
       </Layout>
     </Layout>
