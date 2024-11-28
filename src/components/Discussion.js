@@ -24,7 +24,7 @@ const Discussion = ({ onPostSelect }) => {
             onClick={() => onPostSelect(post.id)}
             style={{ cursor: "pointer" }}
           >
-            {post.title}
+            {`${post.title} - by ${post.username || "Unknown"}`}
           </li>
         ))}
       </ul>
