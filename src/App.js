@@ -4,11 +4,13 @@ import SiderMenu from "./components/SiderMenu";
 import Maintenance from "./components/Maintenance";
 import AmenityReservation from "./components/AmenityReservation";
 import PackageTracker from "./components/PackageTracker";
+import ChatThread from "./components/ChatThread";
 
 const { Sider, Content } = Layout;
 
 function App() {
   const [selectedMenu, setSelectedMenu] = useState("maintenance");
+  const userId = 2; // 假设用户ID
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -17,9 +19,12 @@ function App() {
       </Sider>
       <Layout>
         <Content style={{ padding: "24px" }}>
-          {selectedMenu === "maintenance" && <Maintenance />}
-          {selectedMenu === "amenityReservation" && <AmenityReservation />}
+          {selectedMenu === "maintenance" && <Maintenance userId={userId} />}
+          {selectedMenu === "amenityReservation" && (
+            <AmenityReservation userId={userId} />
+          )}
           {selectedMenu === "packageTracker" && <PackageTracker />}
+          {selectedMenu === "chat" && <ChatThread />}
         </Content>
       </Layout>
     </Layout>
