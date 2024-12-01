@@ -13,17 +13,12 @@ const { Sider, Content } = Layout;
 
 function App() {
   const [selectedMenu, setSelectedMenu] = useState("maintenance");
-<<<<<<< HEAD
-  const userId = 2; // 假设用户ID
-=======
   const [currentPostId, setCurrentPostId] = useState(null);
-
+  const userId = 2; // 假设用户ID
   const handleShowPostDetails = (postId) => {
     setCurrentPostId(postId);
     setSelectedMenu("postDetails");
   };
->>>>>>> origin/Yalong
-
   return (
     <Layout style={{ minHeight: "100vh" }}>
       <Sider collapsible theme="dark" width={250}>
@@ -31,13 +26,10 @@ function App() {
       </Sider>
       <Layout>
         <Content style={{ padding: "24px" }}>
-<<<<<<< HEAD
           {selectedMenu === "maintenance" && <Maintenance userId={userId} />}
           {selectedMenu === "amenityReservation" && (
             <AmenityReservation userId={userId} />
           )}
-=======
-          {selectedMenu === "maintenance" && <Maintenance />}
           {selectedMenu === "notice" && (
             <Notice onPostSelect={handleShowPostDetails} />
           )}
@@ -47,8 +39,6 @@ function App() {
           {selectedMenu === "postDetails" && (
             <PostDetails postId={currentPostId} />
           )}
-          {selectedMenu === "amenityReservation" && <AmenityReservation />}
->>>>>>> origin/Yalong
           {selectedMenu === "packageTracker" && <PackageTracker />}
           {selectedMenu === "chat" && <ChatThread />}
         </Content>
