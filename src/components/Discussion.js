@@ -17,6 +17,7 @@ const Discussion = ({ onPostSelect }) => {
         padding: "10px",
       }}
     >
+      <span style={{ fontSize: "20px", fontWeight: "bold" }}>Post List</span>
       <ul>
         {posts.map((post) => (
           <li
@@ -24,7 +25,7 @@ const Discussion = ({ onPostSelect }) => {
             onClick={() => onPostSelect(post.id)}
             style={{ cursor: "pointer" }}
           >
-            {`${post.title} - by ${post.username || "Unknown"}`}
+            {`${post.title} - by ${post.username || "testUser"}`}
           </li>
         ))}
       </ul>

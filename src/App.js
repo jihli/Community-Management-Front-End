@@ -14,12 +14,11 @@ const { Sider, Content } = Layout;
 function App() {
   const [selectedMenu, setSelectedMenu] = useState("maintenance");
   const [currentPostId, setCurrentPostId] = useState(null);
-
+  const userId = 2; // 假设用户ID
   const handleShowPostDetails = (postId) => {
     setCurrentPostId(postId);
     setSelectedMenu("postDetails");
   };
-
   return (
     <Layout style={{ minHeight: "100vh" }}>
       <Sider collapsible theme="dark" width={250}>
@@ -27,7 +26,10 @@ function App() {
       </Sider>
       <Layout>
         <Content style={{ padding: "24px" }}>
-          {selectedMenu === "maintenance" && <Maintenance />}
+          {selectedMenu === "maintenance" && <Maintenance userId={userId} />}
+          {selectedMenu === "amenityReservation" && (
+            <AmenityReservation userId={userId} />
+          )}
           {selectedMenu === "notice" && (
             <Notice onPostSelect={handleShowPostDetails} />
           )}
@@ -37,7 +39,6 @@ function App() {
           {selectedMenu === "postDetails" && (
             <PostDetails postId={currentPostId} />
           )}
-          {selectedMenu === "amenityReservation" && <AmenityReservation />}
           {selectedMenu === "packageTracker" && <PackageTracker />}
           {selectedMenu === "chat" && <ChatThread />}
         </Content>

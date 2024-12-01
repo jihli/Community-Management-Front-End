@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Breadcrumb,
   Tabs,
@@ -8,51 +8,60 @@ import {
   Button,
   List,
   Card,
+  message,
 } from "antd";
 import moment from "moment";
+import { MaintenanceRequestsAPI } from "../utils";
 
 const { TabPane } = Tabs;
 
-const Maintenance = () => {
-  // State to manage the currently selected tab
+const Maintenance = ({ userId }) => {
   const [selectedTab, setSelectedTab] = useState("newRequest");
-
-  // State to manage the list of maintenance requests (examples)
-  const [maintenanceHistory, setMaintenanceHistory] = useState([
-    { id: 1, description: "Fix kitchen sink", date: "2024-11-15" },
-    { id: 2, description: "Repair air conditioner", date: "2024-10-30" },
-  ]);
-
-  // Reference to the form instance
+  const [maintenanceHistory, setMaintenanceHistory] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
 
-  // Handle the submission of the maintenance request form
-  const handleFormSubmit = (values) => {
-    const { description, date } = values;
-
-    // Create a new maintenance request object
-    const newRequest = {
-      id: maintenanceHistory.length + 1, // Generate a unique ID
-      description,
-      date: date.format("YYYY-MM-DD"), // Format the date to a readable format
+  useEffect(() => {
+    const fetchHistory = async () => {
+      setLoading(true);
+      try {
+        const history = await MaintenanceRequestsAPI.getRequests(userId);
+        setMaintenanceHistory(history);
+      } catch (error) {
+        message.error("Failed to load maintenance history.");
+      } finally {
+        setLoading(false);
+      }
     };
 
-    // Add the new request to the history and reset the form
-    setMaintenanceHistory([newRequest, ...maintenanceHistory]);
-    form.resetFields();
+    fetchHistory();
+  }, [userId]);
 
-    // Switch to the "Past Request" tab to show the updated list
-    setSelectedTab("pastRequest");
+  const handleFormSubmit = async (values) => {
+    const { description, date } = values;
+    const formattedDate = moment(date).format("YYYY-MM-DD");
+    try {
+      await MaintenanceRequestsAPI.createRequest(
+        userId,
+        description,
+        formattedDate
+      );
+      message.success("Maintenance request submitted successfully!");
+      form.resetFields();
+      setSelectedTab("pastRequest");
+
+      // 直接更新本地维护的历史记录，而不是重新请求API
+      const newRequest = { description, requestDate: formattedDate };
+      setMaintenanceHistory([newRequest, ...maintenanceHistory]); // 将新请求添加到历史记录中
+    } catch (error) {
+      message.error("Failed to submit maintenance request.");
+    }
   };
 
-  // Disable dates in the date picker before the current date
-  const disableDate = (current) => {
-    return current && current < moment().startOf("day");
-  };
+  const disableDate = (current) => current && current < moment().startOf("day");
 
   return (
     <div style={{ padding: "24px", background: "#fff" }}>
-      {/* Breadcrumb navigation */}
       <Breadcrumb style={{ marginBottom: "16px" }}>
         <Breadcrumb.Item style={{ color: "#aaa" }}>
           Calendar Schedule
@@ -62,13 +71,11 @@ const Maintenance = () => {
 
       <h2>Maintenance</h2>
 
-      {/* Tabs for "New Request" and "Past Request" */}
       <Tabs
         activeKey={selectedTab}
         onChange={(key) => setSelectedTab(key)}
         centered
       >
-        {/* Tab for submitting a new maintenance request */}
         <TabPane tab="New Request" key="newRequest">
           <Form
             form={form}
@@ -76,7 +83,6 @@ const Maintenance = () => {
             onFinish={handleFormSubmit}
             style={{ maxWidth: "600px", margin: "0 auto" }}
           >
-            {/* Input for the issue description */}
             <Form.Item
               label="Description"
               name="description"
@@ -89,8 +95,6 @@ const Maintenance = () => {
             >
               <Input.TextArea placeholder="Describe the issue..." rows={4} />
             </Form.Item>
-
-            {/* Date picker for selecting the maintenance date */}
             <Form.Item
               label="Date"
               name="date"
@@ -101,8 +105,6 @@ const Maintenance = () => {
                 disabledDate={disableDate}
               />
             </Form.Item>
-
-            {/* Submit button */}
             <Form.Item>
               <Button type="primary" htmlType="submit" block>
                 Submit Request
@@ -111,18 +113,19 @@ const Maintenance = () => {
           </Form>
         </TabPane>
 
-        {/* Tab for viewing past maintenance requests */}
         <TabPane tab="Past Request" key="pastRequest">
           <List
             itemLayout="vertical"
             dataSource={maintenanceHistory}
+            loading={loading}
             renderItem={(item) => (
               <Card style={{ marginBottom: "16px" }}>
                 <p>
                   <strong>Description:</strong> {item.description}
                 </p>
                 <p>
-                  <strong>Date:</strong> {item.date}
+                  <strong>Date:</strong>{" "}
+                  {moment(item.requestDate).format("YYYY-MM-DD")}
                 </p>
               </Card>
             )}
