@@ -8,6 +8,7 @@ import {
   GiftOutlined,
   ToolOutlined,
   ScheduleOutlined,
+  NotificationOutlined, // 通知图标
 } from "@ant-design/icons";
 
 // Sidebar menu component
@@ -27,6 +28,13 @@ const SiderMenu = ({ onSelect }) => {
       {/* Main menu items */}
       <Menu.Item key="dashboard" icon={<DashboardOutlined />}>
         Dashboard
+      </Menu.Item>
+
+      <Menu.Item key="notice" icon={<NotificationOutlined />}>
+        Notice
+      </Menu.Item>
+      <Menu.Item key="discussion" icon={<MessageOutlined />}>
+        Discussion
       </Menu.Item>
 
       {/* Submenu for Calendar Schedule */}
