@@ -77,7 +77,14 @@ const PostDetails = ({ postId }) => {
           }
           style={{ marginBottom: "20px", height: "600px", overflowY: "auto" }}
         >
-          <p>{post.content}</p>
+          <div>
+            {post.content.split("\n").map((line, index) => (
+              <React.Fragment key={index}>
+                {line}
+                <br />
+              </React.Fragment>
+            ))}
+          </div>
           <p>
             <small>{post.date}</small>
           </p>
@@ -90,7 +97,7 @@ const PostDetails = ({ postId }) => {
         style={{
           position: "fixed",
           bottom: 0,
-          left: "295px",
+          left: "290px",
           right: "45px",
           padding: "10px",
           backgroundColor: "#fff",
